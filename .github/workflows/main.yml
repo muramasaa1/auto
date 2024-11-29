@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: "0 8 * * *" # Запускается в 08:00 UTC (14:00 Алматы)
+  - cron: '0 9 * * *'  # 09:00 UTC, что соответствует 15:00 по Алматы
 
 jobs:
   run-selenium:
