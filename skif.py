@@ -11,7 +11,7 @@ import os
 import pandas as pd
 import glob
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException]
+from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
 
 download_folder = "/tmp/downloads"
 os.makedirs(download_folder, exist_ok=True)
@@ -106,7 +106,6 @@ except TimeoutException:
 
 try:
     df = pd.read_excel(downloaded_file)
-
     print("Колонки в загруженном файле:", df.columns.tolist())
 
     if df.empty:
@@ -129,7 +128,6 @@ try:
     )
 
     df = df[:-1]
-
     df["BarCode"] = pd.to_numeric(df["BarCode"], errors='coerce')
 
     file_date = datetime.strptime(yesterday, "%d-%m-%Y").strftime("%Y%m%d")
