@@ -118,6 +118,13 @@ except TimeoutException:
 try:
     df = pd.read_excel(downloaded_file)
 
+    print("Колонки в загруженном файле:", df.columns.tolist())
+
+    # Проверка на пустой файл
+    if df.empty:
+        raise ValueError("Файл пустой. Проверьте загруженные данные.")
+
+    # Переименование столбцов
     df = df.rename(columns={
         "Идентификатор": "BarCode",
         "Название магазина": "StoreCode",
@@ -125,6 +132,9 @@ try:
         "Кол-во остатков на конец дня": "Remains"
     })
 
+    print("Переименованные колонки:", df.columns.tolist())
+
+    # Операции с данными
     df["StoreCode"] = (
         df["StoreCode"]
         .str.replace("С/о", "", regex=False)
@@ -160,11 +170,14 @@ try:
         current_time = datetime.now().strftime("%Y%m%d%H%M")
         remote_file_name = f"{current_time}69_SalesRemains_PY_day.xlsx"
 
-        with open(remote_file_name, 'wb') as f:
-            df.to_excel(f, index=False, sheet_name="Sheet1")
+        # Сохранение файла перед загрузкой
+        local_path = os.path.join(download_folder, remote_file_name)
+        df.to_excel(local_path, index=False, sheet_name="Sheet1")
 
-        with open(remote_file_name, 'rb') as local_file:
+        with open(local_path, 'rb') as local_file:
             ftp.storbinary(f'STOR {remote_file_name}', local_file)
+
+        print(f"Файл успешно загружен на FTP: {remote_file_name}")
 
     except Exception as e:
         print(f"Ошибка FTP: {e}")
