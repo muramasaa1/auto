@@ -11,13 +11,11 @@ import os
 import pandas as pd
 import glob
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
+from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException]
 
-# Настройка папки загрузки
 download_folder = "/tmp/downloads"
 os.makedirs(download_folder, exist_ok=True)
 
-# Определение путей для работы с Chrome в безголовом режиме
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--disable-gpu")
 chrome_options.add_argument("--no-sandbox")
@@ -25,10 +23,8 @@ chrome_options.add_argument("--headless")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_experimental_option("prefs", {"download.default_directory": download_folder})
 
-# Запуск безголового браузера
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
-# Авторизация на сайте
 driver.get("https://bi.datawiz.io")
 wait = WebDriverWait(driver, 30)
 
@@ -41,7 +37,6 @@ password_field.send_keys("Balki852*%@")
 login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']")))
 login_button.click()
 
-# Переход к дашборду
 dashboards_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[@href='/c/154/dashboards']")))
 dashboards_link.click()
 
@@ -56,12 +51,10 @@ except TimeoutException:
 except Exception as e:
     print(f"Произошла ошибка: {e}")
 
-# Открытие нужного отчета
 open_button = wait.until(EC.presence_of_element_located((By.XPATH, "//div[text()='P&G (Stock)']/following::button[span[text()='Открыть']]")))
 driver.execute_script("arguments[0].scrollIntoView(true);", open_button)
 open_button.click()
 
-# Настройка фильтров
 filters_button = wait.until(EC.presence_of_element_located((By.XPATH, "//span[@class='side-button__text' and text()='Фильтры']")))
 driver.execute_script("arguments[0].scrollIntoView(true);", filters_button)
 driver.execute_script("arguments[0].click();", filters_button)
@@ -85,7 +78,6 @@ try:
 except TimeoutException:
     print("Элемент не исчез в течение заданного времени, продолжаем выполнение.")
 
-# Сохранение файла
 time.sleep(2)
 more_button = wait.until(EC.presence_of_element_located((By.XPATH, "//button[@title='Больше']")))
 more_button.click()
@@ -93,7 +85,6 @@ more_button.click()
 save_xls_button = wait.until(EC.presence_of_element_located((By.XPATH, "//span[text()='Сохранить XLS']")))
 save_xls_button.click()
 
-# Функция ожидания файла
 def wait_for_file(download_folder, file_pattern, timeout=300):
     start_time = time.time()
     while time.time() - start_time < timeout:
@@ -105,7 +96,6 @@ def wait_for_file(download_folder, file_pattern, timeout=300):
         time.sleep(10)
     raise TimeoutException("Файл не загрузился в течение времени ожидания")
 
-# Ожидание загрузки файла
 try:
     downloaded_file = wait_for_file(download_folder, f"*30 дней ({yesterday}_{yesterday})*.xlsx", timeout=300)
     print(f"Файл успешно загружен: {downloaded_file}")
@@ -114,17 +104,14 @@ except TimeoutException:
     driver.quit()
     exit(1)
 
-# Обработка загруженного файла
 try:
     df = pd.read_excel(downloaded_file)
 
     print("Колонки в загруженном файле:", df.columns.tolist())
 
-    # Проверка на пустой файл
     if df.empty:
         raise ValueError("Файл пустой. Проверьте загруженные данные.")
 
-    # Переименование столбцов
     df = df.rename(columns={
         "Идентификатор": "BarCode",
         "Название магазина": "StoreCode",
@@ -134,7 +121,6 @@ try:
 
     print("Переименованные колонки:", df.columns.tolist())
 
-    # Операции с данными
     df["StoreCode"] = (
         df["StoreCode"]
         .str.replace("С/о", "", regex=False)
@@ -160,7 +146,6 @@ try:
 
     df = df[["Date", "BarCode", "VendorCode", "StoreCode", "Price", "Sell-out", "Remains"]]
 
-    # Загрузка на FTP
     ftp = FTP('cloud.applecity.kz')
     try:
         ftp.login('CDL_SKIF_CC', 'MKDLKj09jij202!')
@@ -170,7 +155,6 @@ try:
         current_time = datetime.now().strftime("%Y%m%d%H%M")
         remote_file_name = f"{current_time}69_SalesRemains_PY_day.xlsx"
 
-        # Сохранение файла перед загрузкой
         local_path = os.path.join(download_folder, remote_file_name)
         df.to_excel(local_path, index=False, sheet_name="Sheet1")
 
