@@ -1,4 +1,4 @@
-name: Selenium Automation
+name: SKIF_FTP
 
 on:
   push:
