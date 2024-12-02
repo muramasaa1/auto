@@ -146,7 +146,7 @@ try:
 
     ftp = FTP('cloud.applecity.kz')
     try:
-        ftp.login('CDL_SKIF_CC', 'MKDLKj09jij202!')
+        ftp.login('FTP_USER', 'FTP_PASSWORD')
         ftp.set_pasv(True)
         ftp.cwd('SKIF_CC/InBox')
 
