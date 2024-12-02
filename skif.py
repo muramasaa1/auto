@@ -25,14 +25,14 @@ chrome_options.add_experimental_option("prefs", {"download.default_directory": d
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
-driver.get("https://bi.datawiz.io")
+driver.get("SITE_URL")
 wait = WebDriverWait(driver, 30)
 
 email_field = wait.until(EC.visibility_of_element_located((By.NAME, "auth-username")))
-email_field.send_keys("zhunussova.b@applecity.kz")
+email_field.send_keys("SITE_EMAIL")
 
 password_field = wait.until(EC.visibility_of_element_located((By.NAME, "auth-password")))
-password_field.send_keys("Balki852*%@")
+password_field.send_keys("SITE_PASSWORD")
 
 login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']")))
 login_button.click()
@@ -144,7 +144,7 @@ try:
 
     df = df[["Date", "BarCode", "VendorCode", "StoreCode", "Price", "Sell-out", "Remains"]]
 
-    ftp = FTP('cloud.applecity.kz')
+    ftp = FTP('FTP_URL')
     try:
         ftp.login('FTP_USER', 'FTP_PASSWORD')
         ftp.set_pasv(True)
