@@ -42,4 +42,8 @@ jobs:
       env:
         FTP_USER: ${{ secrets.FTP_USER }}
         FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        SITE_EMAIL: ${{ secrets.SITE_EMAIL }}
+        SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
+        SITE_URL: ${{ secrets.SITE_URL }}
+        FTP_URL: ${{ secrets.FTP_URL }}
       run: python3 skif.py
