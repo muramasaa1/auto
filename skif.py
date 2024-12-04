@@ -13,7 +13,6 @@ import glob
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
 
-# Создаём постоянную папку для загрузки
 download_folder = "./downloads"
 os.makedirs(download_folder, exist_ok=True)
 
