@@ -1,5 +1,12 @@
 name: SKIF_FTP
 
+on:
+  schedule:
+    # Будние дни: запуск в 09:30 UTC+5 (04:30 UTC)
+    - cron: '30 4 * * 1-5'
+    # Выходные дни: запуск в 18:00 UTC+5 (13:00 UTC)
+    - cron: '0 13 * * 6,0'
+
 jobs:
   run-selenium:
     runs-on: ubuntu-latest
