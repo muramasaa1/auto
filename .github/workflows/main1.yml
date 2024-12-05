@@ -36,7 +36,7 @@ jobs:
         sudo chmod +x /usr/local/bin/chromedriver
 
     - name: Create temp download directory
-      run: mkdir -p /tmp/downloads
+      run: mkdir -p ./downloads  # Сохранение внутри репозитория
 
     - name: Run Python script
       env:
@@ -47,3 +47,11 @@ jobs:
         SITE_URL: ${{ secrets.SITE_URL }}
         FTP_URL: ${{ secrets.FTP_URL }}
       run: python3 skif.py
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add ./downloads/*  # Добавить все скачанные файлы
+        git commit -m "Add downloaded files" || echo "No changes to commit"
+        git push origin main  # Замените 'main' на вашу ветку, если она отличается
