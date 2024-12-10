@@ -13,17 +13,6 @@ import glob
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
 
-# Загрузка переменных из окружения
-FTP_USER = os.getenv('FTP_USER')
-FTP_PASSWORD = os.getenv('FTP_PASSWORD')
-SITE_EMAIL = os.getenv('SITE_EMAIL')
-SITE_PASSWORD = os.getenv('SITE_PASSWORD')
-SITE_URL = os.getenv('SITE_URL')
-FTP_URL = os.getenv('FTP_URL')
-
-if not all([FTP_USER, FTP_PASSWORD, SITE_EMAIL, SITE_PASSWORD, SITE_URL, FTP_URL]):
-    raise ValueError("Одно или несколько значений переменных окружения не установлены.")
-
 download_folder = "./downloads"
 os.makedirs(download_folder, exist_ok=True)
 
@@ -39,15 +28,15 @@ chrome_options.add_experimental_option("prefs", {"download.default_directory": o
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
 # Переход на сайт
-driver.get(SITE_URL)
+driver.get("https://bi.datawiz.io")
 wait = WebDriverWait(driver, 30)
 
-# Ввод логина и пароля
+# Вводим логин и пароль
 email_field = wait.until(EC.visibility_of_element_located((By.NAME, "auth-username")))
-email_field.send_keys(SITE_EMAIL)
+email_field.send_keys(os.getenv("SITE_EMAIL"))
 
 password_field = wait.until(EC.visibility_of_element_located((By.NAME, "auth-password")))
-password_field.send_keys(SITE_PASSWORD)
+password_field.send_keys(os.getenv("SITE_PASSWORD"))
 
 # Логинимся
 login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']")))
@@ -119,8 +108,30 @@ def wait_for_file(download_folder, file_pattern, timeout=300):
         time.sleep(10)
     raise TimeoutException("Файл не загрузился в течение времени ожидания")
 
+# Повторная попытка скачивания файла
+def retry_download():
+    attempts = 0
+    max_attempts = 3
+    while attempts < max_attempts:
+        try:
+            downloaded_file = wait_for_file(download_folder, f"*30 дней ({yesterday}_{yesterday})*.xlsx", timeout=300)
+            df = pd.read_excel(downloaded_file)
+
+            if not df.empty:
+                print("Файл содержит данные.")
+                return downloaded_file
+            else:
+                print("Файл пустой. Пытаемся снова...")
+                os.remove(downloaded_file)
+                attempts += 1
+        except Exception as e:
+            print(f"Ошибка при загрузке файла: {e}")
+            attempts += 1
+
+    raise ValueError("Не удалось загрузить файл с данными после нескольких попыток.")
+
 try:
-    downloaded_file = wait_for_file(download_folder, f"*30 дней ({yesterday}_{yesterday})*.xlsx", timeout=300)
+    downloaded_file = retry_download()
     print(f"Файл успешно загружен: {downloaded_file}")
 except TimeoutException:
     print("Файл не загрузился в течение времени ожидания. Проверьте настройки.")
@@ -141,8 +152,6 @@ try:
         "Кол-во продаж": "Sell-out",
         "Кол-во остатков на конец дня": "Remains"
     })
-
-    print("Переименованные колонки:", df.columns.tolist())
 
     df["StoreCode"] = (
         df["StoreCode"]
@@ -168,9 +177,9 @@ try:
 
     df = df[["Date", "BarCode", "VendorCode", "StoreCode", "Price", "Sell-out", "Remains"]]
 
-    ftp = FTP(FTP_URL)
+    ftp = FTP(os.getenv("FTP_URL"))
     try:
-        ftp.login(FTP_USER, FTP_PASSWORD)
+        ftp.login(os.getenv("FTP_USER"), os.getenv("FTP_PASSWORD"))
         ftp.set_pasv(True)
         ftp.cwd('SKIF_CC/InBox')
 
