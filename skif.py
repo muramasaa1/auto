@@ -13,6 +13,17 @@ import glob
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
 
+# Загрузка переменных из окружения
+FTP_USER = os.getenv('FTP_USER')
+FTP_PASSWORD = os.getenv('FTP_PASSWORD')
+SITE_EMAIL = os.getenv('SITE_EMAIL')
+SITE_PASSWORD = os.getenv('SITE_PASSWORD')
+SITE_URL = os.getenv('SITE_URL')
+FTP_URL = os.getenv('FTP_URL')
+
+if not all([FTP_USER, FTP_PASSWORD, SITE_EMAIL, SITE_PASSWORD, SITE_URL, FTP_URL]):
+    raise ValueError("Одно или несколько значений переменных окружения не установлены.")
+
 download_folder = "./downloads"
 os.makedirs(download_folder, exist_ok=True)
 
@@ -28,15 +39,15 @@ chrome_options.add_experimental_option("prefs", {"download.default_directory": o
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
 # Переход на сайт
-driver.get("https://bi.datawiz.io")
+driver.get(SITE_URL)
 wait = WebDriverWait(driver, 30)
 
-# Вводим логин и пароль
+# Ввод логина и пароля
 email_field = wait.until(EC.visibility_of_element_located((By.NAME, "auth-username")))
-email_field.send_keys("zhunussova.b@applecity.kz")
+email_field.send_keys(SITE_EMAIL)
 
 password_field = wait.until(EC.visibility_of_element_located((By.NAME, "auth-password")))
-password_field.send_keys("Balki852*%@")
+password_field.send_keys(SITE_PASSWORD)
 
 # Логинимся
 login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']")))
@@ -157,9 +168,9 @@ try:
 
     df = df[["Date", "BarCode", "VendorCode", "StoreCode", "Price", "Sell-out", "Remains"]]
 
-    ftp = FTP('cloud.applecity.kz')
+    ftp = FTP(FTP_URL)
     try:
-        ftp.login('CDL_SKIF_CC', 'MKDLKj09jij202!')
+        ftp.login(FTP_USER, FTP_PASSWORD)
         ftp.set_pasv(True)
         ftp.cwd('SKIF_CC/InBox')
 
