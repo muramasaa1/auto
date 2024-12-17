@@ -33,10 +33,10 @@ wait = WebDriverWait(driver, 30)
 
 # Вводим логин и пароль
 email_field = wait.until(EC.visibility_of_element_located((By.NAME, "auth-username")))
-email_field.send_keys(os.getenv("SITE_EMAIL"))
+email_field.send_keys("zhunussova.b@applecity.kz")
 
 password_field = wait.until(EC.visibility_of_element_located((By.NAME, "auth-password")))
-password_field.send_keys(os.getenv("SITE_PASSWORD"))
+password_field.send_keys("Balki852*%@")
 
 # Логинимся
 login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']")))
@@ -108,30 +108,8 @@ def wait_for_file(download_folder, file_pattern, timeout=300):
         time.sleep(10)
     raise TimeoutException("Файл не загрузился в течение времени ожидания")
 
-# Повторная попытка скачивания файла
-def retry_download():
-    attempts = 0
-    max_attempts = 3
-    while attempts < max_attempts:
-        try:
-            downloaded_file = wait_for_file(download_folder, f"*30 дней ({yesterday}_{yesterday})*.xlsx", timeout=300)
-            df = pd.read_excel(downloaded_file)
-
-            if not df.empty:
-                print("Файл содержит данные.")
-                return downloaded_file
-            else:
-                print("Файл пустой. Пытаемся снова...")
-                os.remove(downloaded_file)
-                attempts += 1
-        except Exception as e:
-            print(f"Ошибка при загрузке файла: {e}")
-            attempts += 1
-
-    raise ValueError("Не удалось загрузить файл с данными после нескольких попыток.")
-
 try:
-    downloaded_file = retry_download()
+    downloaded_file = wait_for_file(download_folder, f"*30 дней ({yesterday}_{yesterday})*.xlsx", timeout=300)
     print(f"Файл успешно загружен: {downloaded_file}")
 except TimeoutException:
     print("Файл не загрузился в течение времени ожидания. Проверьте настройки.")
@@ -152,6 +130,8 @@ try:
         "Кол-во продаж": "Sell-out",
         "Кол-во остатков на конец дня": "Remains"
     })
+
+    print("Переименованные колонки:", df.columns.tolist())
 
     df["StoreCode"] = (
         df["StoreCode"]
@@ -177,9 +157,9 @@ try:
 
     df = df[["Date", "BarCode", "VendorCode", "StoreCode", "Price", "Sell-out", "Remains"]]
 
-    ftp = FTP(os.getenv("FTP_URL"))
+    ftp = FTP('cloud.applecity.kz')
     try:
-        ftp.login(os.getenv("FTP_USER"), os.getenv("FTP_PASSWORD"))
+        ftp.login('CDL_SKIF_CC', 'MKDLKj09jij202!')
         ftp.set_pasv(True)
         ftp.cwd('SKIF_CC/InBox')
 
